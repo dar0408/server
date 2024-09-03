@@ -7,15 +7,13 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-
 app.get('/', (req, res) => {
     res.send('Hello World!')
 })
 
 // mongodb confiq here
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const uri = "mongodb+srv://book-store:book-store@cluster0.dxyurpx.mongodb.net/buybooks?retryWrites=true&w=majority&appName=Cluster0";
-
+const uri = process.env.MONGODB_URI;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -33,21 +31,12 @@ async function run() {
         // Send a ping to confirm a successful connection
         const bookCollections = client.db("BookInventory").collection("Books");
 
-
         // insert a book to db: Post Method
         app.post("/upload-book", async (req, res) => {
             const data = req.body;
-            // console.log(data);
             const result = await bookCollections.insertOne(data);
             res.send(result);
         })
-
-        // // get all books from db
-        // app.get("/all-books", async (req, res) => {
-        //     const books = bookCollections.find();
-        //     const result = await books.toArray();
-        //     res.send(result)
-        // })
 
         // get all books & find by a category from db
         app.get("/all-books", async (req, res) => {
@@ -62,7 +51,6 @@ async function run() {
         // update a books method
         app.patch("/book/:id", async (req, res) => {
             const id = req.params.id;
-            // console.log(id);
             const updateBookData = req.body;
             const filter = { _id: new ObjectId(id) };
             const updatedDoc = {
@@ -77,7 +65,6 @@ async function run() {
             res.send(result);
         })
 
-
         // delete a item from db
         app.delete("/book/:id", async (req, res) => {
             const id = req.params.id;
@@ -86,7 +73,6 @@ async function run() {
             res.send(result);
         })
 
-
         // get a single book data
         app.get("/book/:id", async (req, res) => {
             const id = req.params.id;
@@ -94,7 +80,6 @@ async function run() {
             const result = await bookCollections.findOne(filter);
             res.send(result)
         })
-
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
